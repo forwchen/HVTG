@@ -1,0 +1,9 @@
+*.pyc
+*.pyx
+*.so
+*.swp
+*.mp4
+*.avi
+__pycache__
+.DS_Store
+.ipynb_checkpoints

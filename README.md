@@ -1,8 +1,42 @@
 # HVTG
 Code for ECCV 2020 paper "Hierarchical Visual-Textual Graph for Temporal Activity Localization via Language"
 
-### Steps:
+### 0: Clone This Repo
+Suppose you are in the HVTG/ folder.
 
-- [ ] Code upload
-- [ ] Feature extraction tool upload
-- [ ] Feature upload
+### 1: Feature Extraction
+
+#### 1.1 Extract video frames
+It is simple to do this with ffmpeg. Each video's frames should be put in a directory (e.g., $HOME/anet/frames/01vNlQLepsE).
+Make a list of all the directories, you can also split (using the split command) the list and do the following steps in parallel to speed things up.
+
+#### 1.2 Setup object detection code
+Download the object detection code and model from [this repository](https://github.com/peteanderson80/bottom-up-attention),
+and compile and install the repo according to their guide.
+Put the files in ./tools into bottom-up-attention/tools.
+
+#### 1.3 ROI extraction
+Go to ./tools.
+Run the script ``./roi_ext_per_vid.sh anet split_cha/cha_split_0 0``.
+The parameters means dataset, path to frame directory list, and GPU id.
+
+The extracted object ROIs will be stored in a directory, one pickled file per video.
+You'll need to merge them in to a single dictionary keyed with each video's id.
+
+#### 1.4 ROI feature extraction
+Go to ./feat\_ext.
+Download pretrained Inception-ResNet-v2 model [here](https://github.com/tensorflow/models/tree/master/research/slim#Pretrained),
+and unzip and put it into ./ckpts
+
+We need the ROI Align code from [faster-rcnn.pytorch](https://github.com/jwyang/faster-rcnn.pytorch).
+Download and compile it, and put the library path in ``roi_align_rpc_server.py`` line 4.
+
+Start the rpc server: ``python roi_align_rpc_server.py rois_cha.pkl 1234``
+
+Start feature extraction: ``python feat_extract_roi.py inception_resnet_v2 all_frames_cha.txt roi_feat_cha.hdf5 1234``
+
+The frame list is produced with command like: ``find $HOME/cha/frames -type f``.
+The resulting features are stored in a hdf5 file, each key 'videoID/frameID' corresponds to object features for that frame, 
+you need to merge the features of one video into a tensor shaped [# frames, # objects, # channels], and save as numpy file.
+
+### 2: Train and Test
