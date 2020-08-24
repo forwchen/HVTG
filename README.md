@@ -57,6 +57,7 @@ We need to merge the features of one video into a tensor shaped [# frames, # obj
 
 ### 2: Train and Test
 Go to ./hvtg. Download [processed annotations](https://drive.google.com/file/d/1lQgHcnM6-Bw7aEVyvaLXDS0_EQNokqF_/view?usp=sharing) and uncompress here.
+Processed ActivityNet annotations can be downloaded [here](https://drive.google.com/file/d/1yn1PCVAFAxT15_KyH3s1jfS-lLv-g72e/view?usp=sharing).
 
 #### 2.1 Convert features format
 For the sake of I/O efficiency, we need to convert the training data into tfrecord format.
