@@ -7,7 +7,7 @@ Suppose you are in the HVTG/ folder.
 ### 1: Feature Extraction
 
 #### 1.1 Extract video frames
-It is simple to do this with ffmpeg. Each video's frames should be put in a directory (e.g., $HOME/anet/frames/01vNlQLepsE).
+It is simple to do this with ffmpeg. Each video's frames should be put in a directory (e.g., ``$HOME/anet/frames/01vNlQLepsE``).
 Make a list of all the directories, you can also split (using the split command) the list and do the following steps in parallel to speed things up.
 
 #### 1.2 Setup object detection code
@@ -31,12 +31,23 @@ and unzip and put it into ./ckpts
 We need the ROI Align code from [faster-rcnn.pytorch](https://github.com/jwyang/faster-rcnn.pytorch).
 Download and compile it, and put the library path in ``roi_align_rpc_server.py`` line 4.
 
-Start the rpc server: ``python roi_align_rpc_server.py rois_cha.pkl 1234``
+Start the rpc server: ``python roi_align_rpc_server.py rois_cha.pkl 1234``.
 
-Start feature extraction: ``python feat_extract_roi.py inception_resnet_v2 all_frames_cha.txt roi_feat_cha.hdf5 1234``
+Start feature extraction: ``python feat_extract_roi.py inception_resnet_v2 all_frames_cha.txt roi_feat_cha.hdf5 1234``.
 
 The frame list is produced with command like: ``find $HOME/cha/frames -type f``.
 The resulting features are stored in a hdf5 file, each key 'videoID/frameID' corresponds to object features for that frame, 
 you need to merge the features of one video into a tensor shaped [# frames, # objects, # channels], and save as numpy file.
 
 ### 2: Train and Test
+Go to ./hvtg. Download [processed annotations](https://drive.google.com/file/d/1lQgHcnM6-Bw7aEVyvaLXDS0_EQNokqF_/view?usp=sharing) and uncompress here.
+
+#### 2.1 Convert features format
+For the sake of I/O efficiency, we need to convert the training data into tfrecord format.
+Place the numpy features in ``./data_cha/features/ir_roi`` and make a directory ``./data_cha/features/tfrecords_ir_roi``.
+Run ``python make_tfrec.py --output_dir ./data_cha/features/tfrecords_ir_roi  --max_sent_len 12 --max_feat_len 128``.
+
+#### 2.2 Train
+```
+python main_mgpu.py --model_name hvtg --net_type hvtg --dataset charades --data_dir ./data_cha --max_sent_len 12  --max_feat_len 128 --use_tfr True --batch_size 32 --optim adam --lr 0.0001 --max_epoch 100 --log_dir ./logs --num_gpu 2
+```
