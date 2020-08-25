@@ -204,6 +204,9 @@ class Att(object):
                 'preds': pred,
                 'att_w': w}
 
+###############################################################################
+# Adapted from https://github.com/Kyubyong/transformer/blob/master/modules.py
+###############################################################################
 
 def feedforward(inputs,
                 num_units=[2048, 512],
@@ -321,22 +324,8 @@ def multihead_attention(queries,
         # Scale
         outputs = outputs / (K_.get_shape().as_list()[-1] ** 0.5)
 
-        # Key Masking
-        #key_masks = tf.sign(tf.abs(tf.reduce_sum(keys, axis=-1))) # (N, T_k)
-        #key_masks = tf.tile(key_masks, [num_heads, 1]) # (h*N, T_k)
-        #key_masks = tf.tile(tf.expand_dims(key_masks, 1), [1, tf.shape(queries)[1], 1]) # (h*N, T_q, T_k)
-
-        #paddings = tf.ones_like(outputs)*(-2**32+1)
-        #outputs = tf.where(tf.equal(key_masks, 0), paddings, outputs) # (h*N, T_q, T_k)
-
         # Activation
         outputs = tf.nn.softmax(outputs) # (h*N, T_q, T_k)
-
-        # Query Masking
-        #query_masks = tf.sign(tf.abs(tf.reduce_sum(queries, axis=-1))) # (N, T_q)
-        #query_masks = tf.tile(query_masks, [num_heads, 1]) # (h*N, T_q)
-        #query_masks = tf.tile(tf.expand_dims(query_masks, -1), [1, 1, tf.shape(keys)[1]]) # (h*N, T_q, T_k)
-        #outputs *= query_masks # broadcasting. (N, T_q, C)
 
         # Dropouts
         outputs = tf.layers.dropout(outputs, rate=dropout_rate, training=tf.convert_to_tensor(is_training))
